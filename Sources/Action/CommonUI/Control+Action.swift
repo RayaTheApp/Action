@@ -20,8 +20,13 @@ public extension Reactive where Base: Control {
 
 		// For each tap event, use the inputTransform closure to provide an Input value to the action
 		controlEvent
-			.withUnretained(self.base)
-			.map(\.0)
+      .flatMap { [weak base] _ -> Observable<Base> in
+        guard let base = base else {
+          return .empty()
+        }
+
+        return .just(base)
+      }
 			.map(inputTransform)
 			.bind(to: action.inputs)
 			.disposed(by: self.base.actionDisposeBag)

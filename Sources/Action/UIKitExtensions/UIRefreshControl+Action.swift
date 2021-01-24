@@ -34,8 +34,13 @@ public extension Reactive where Base: UIRefreshControl {
         unbindAction()
 
         self.controlEvent(.valueChanged)
-            .withUnretained(self.base)
-            .map(\.0)
+            .flatMap { [weak base] _ -> Observable<Base> in
+              guard let base = base else {
+                return .empty()
+              }
+
+              return .just(base)
+            }
             .map(inputTransform)
             .bind(to: action.inputs)
             .disposed(by: self.base.actionDisposeBag)
